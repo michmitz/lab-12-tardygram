@@ -47,4 +47,30 @@ describe('lab-12-tardygram routes', () => {
     });
   });
 
+  it('verifies a user via GET', async() => {
+    const agent = request.agent(app);
+    await agent
+      .post('/api/v1/auth/signup')
+      .send({
+        email: 'test@test.com',
+        password: 'password',
+        profilePhotoUrl: 'testurl.com'
+      });
+
+    const response = await agent
+      .get('/api/v1/auth/verify');
+      
+    expect(response.body).toEqual({
+      id: expect.any(String),
+      email: 'test@test.com'
+    });
+
+    const responseWithoutAUser = await request(app)
+      .get('/api/v1/auth/verify');
+
+    expect(responseWithoutAUser.body).toEqual({
+      status: 500,
+      message: 'jwt must be provided'
+    });
+  });
 });
