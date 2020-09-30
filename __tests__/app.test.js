@@ -3,12 +3,9 @@ const pool = require('../lib/utils/pool');
 const request = require('supertest');
 const app = require('../lib/app');
 const UserService = require('../lib/services/user-service');
+const { getAgent } = require('../lib/data/data-helpers');
 
 describe('lab-12-tardygram routes', () => {
-  beforeEach(() => {
-    return pool.query(fs.readFileSync('./sql/setup.sql', 'utf-8'));
-  });
-
   it('signs up a user via POST', async() => {
     const response = await request(app)
       .post('/api/v1/auth/signup')
@@ -26,43 +23,28 @@ describe('lab-12-tardygram routes', () => {
   });
 
   it('logs in a user via POST', async() => {
-    const user = await UserService.create({
-      email: 'test@test.com',
-      password: 'password',
-      profilePhotoUrl: 'testurl.com' 
-    });
-
     const response = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'test@test.com',
-        password: 'password',
-        profilePhotoUrl: 'testurl.com'
+        email: 'test0@test.com',
+        password: 'password0',
+        profilePhotoUrl: 'testurl0.com'
       });
 
     expect(response.body).toEqual({
-      id: user.id,
-      email: 'test@test.com',
-      profilePhotoUrl: 'testurl.com'
+      id: expect.any(String),
+      email: 'test0@test.com',
+      profilePhotoUrl: 'testurl0.com'
     });
   });
 
   it('verifies a user via GET', async() => {
-    const agent = request.agent(app);
-    await agent
-      .post('/api/v1/auth/signup')
-      .send({
-        email: 'test@test.com',
-        password: 'password',
-        profilePhotoUrl: 'testurl.com'
-      });
-
-    const response = await agent
+    const response = await getAgent()
       .get('/api/v1/auth/verify');
       
     expect(response.body).toEqual({
       id: expect.any(String),
-      email: 'test@test.com'
+      email: 'test0@test.com'
     });
 
     const responseWithoutAUser = await request(app)
